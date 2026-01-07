@@ -1,11 +1,10 @@
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public enum CpuStatus
 {
-    public enum CpuStatus
-    {
-        NONE = 0,        
-        RUN = 1,
-        STEPRUN = 2,
-        STOP = 3,
-        PAUSE = 4
-    }
+    NONE = 0,        
+    RUN = 1,
+    STEPRUN = 2,
+    STOP = 3,
+    PAUSE = 4
 }

@@ -1,12 +1,11 @@
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public enum StopPauseCause
 {
-    public enum StopPauseCause
-    {
-        None,
-        BySwitch,
-        RemoteRelay,
-        RemoteDevice,
-        ByProgram,
-        ByError
-    }
+    None,
+    BySwitch,
+    RemoteRelay,
+    RemoteDevice,
+    ByProgram,
+    ByError
 }

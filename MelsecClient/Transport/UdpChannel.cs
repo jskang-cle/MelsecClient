@@ -1,76 +1,75 @@
 ﻿using System.Net.Sockets;
 
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+class UdpChannel : IChannel
 {
-    class UdpChannel : IChannel
+    private UdpClient Client;
+    private IPEndPoint EndPoint;
+
+    public UdpChannel(IPEndPoint endpoint)
     {
-        private UdpClient Client;
-        private IPEndPoint EndPoint;
+        EndPoint = endpoint;
+        Client = new UdpClient();
+        Client.Connect(endpoint);
+    }
 
-        public UdpChannel(IPEndPoint endpoint)
+    public byte[] Execute(byte[] buffer)
+    {
+        Client.Send(buffer, buffer.Length);
+        return Client.Receive(ref EndPoint);
+    }
+
+    public int SendTimeout
+    {
+        get
         {
-            EndPoint = endpoint;
-            Client = new UdpClient();
-            Client.Connect(endpoint);
+            return Client.Client.SendTimeout;
         }
-
-        public byte[] Execute(byte[] buffer)
+        set
         {
-            Client.Send(buffer, buffer.Length);
-            return Client.Receive(ref EndPoint);
+            Client.Client.SendTimeout = value;
         }
+    }
 
-        public int SendTimeout
+    public int ReceiveTimeout
+    {
+        get
         {
-            get
-            {
-                return Client.Client.SendTimeout;
-            }
-            set
-            {
-                Client.Client.SendTimeout = value;
-            }
+            return Client.Client.ReceiveTimeout;
         }
-
-        public int ReceiveTimeout
+        set
         {
-            get
-            {
-                return Client.Client.ReceiveTimeout;
-            }
-            set
-            {
-                Client.Client.ReceiveTimeout = value;
-            }
+            Client.Client.ReceiveTimeout = value;
         }
+    }
 
-        private bool disposed;
+    private bool disposed;
 
-        public void Dispose()
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposed)
+            if (disposing)
             {
-                if (disposing)
+                if (Client != null)
                 {
-                    if (Client != null)
-                    {
-                        Client.Close();
-                        Client = null;
-                    }
+                    Client.Close();
+                    Client = null;
                 }
-                disposed = true;
             }
+            disposed = true;
         }
+    }
 
-        ~UdpChannel()
-        {
-            Dispose(false);
-        }
+    ~UdpChannel()
+    {
+        Dispose(false);
     }
 }

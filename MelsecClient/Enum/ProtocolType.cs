@@ -1,8 +1,7 @@
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public enum ProtocolType
 {
-    public enum ProtocolType
-    {
-        Melsec3EProtocol = 1,
-        Melsec4EProtocol = 2
-    }
+    Melsec3EProtocol = 1,
+    Melsec4EProtocol = 2
 }

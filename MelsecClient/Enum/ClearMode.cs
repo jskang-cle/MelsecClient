@@ -1,9 +1,8 @@
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public enum ClearMode : byte
 {
-    public enum ClearMode : byte
-    {
-        None = 0x00,
-        OutsideLatch = 0x01,
-        All = 0x02
-    }
+    None = 0x00,
+    OutsideLatch = 0x01,
+    All = 0x02
 }

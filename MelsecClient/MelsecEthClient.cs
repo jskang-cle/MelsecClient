@@ -1,29 +1,28 @@
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public sealed class MelsecEthClient : MelsecClient
 {
-    public sealed class MelsecEthClient : MelsecClient
+    public MelsecEthClient(ProtocolType protocoltype, string ip, ushort port, int receiveTimeout, int sendTimeout)
+        : base(protocoltype, ip, port, receiveTimeout, sendTimeout)
     {
-        public MelsecEthClient(ProtocolType protocoltype, string ip, ushort port, int receiveTimeout, int sendTimeout)
-            : base(protocoltype, ip, port, receiveTimeout, sendTimeout)
-        {
-        }
+    }
 
-        public MelsecEthProtocol Protocol
+    public MelsecEthProtocol Protocol
+    {
+        get
         {
-            get
-            {
-                return (MelsecEthProtocol)melsecProtocol;
-            }
+            return (MelsecEthProtocol)melsecProtocol;
         }
+    }
 
-        public override string ToString()
-        {
-            return Protocol.ToString();
-        }
+    public override string ToString()
+    {
+        return Protocol.ToString();
+    }
 
-        public bool ErrLed()
-        {
-            ushort[] buff = Protocol.ReadBuffer<ushort>(0xC8, 1);
-            return ((buff[0] & (1 << 4)) != 0);
-        }
+    public bool ErrLed()
+    {
+        ushort[] buff = Protocol.ReadBuffer<ushort>(0xC8, 1);
+        return ((buff[0] & (1 << 4)) != 0);
     }
 }

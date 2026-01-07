@@ -1,19 +1,18 @@
-﻿namespace System.Net.Melsec
+﻿namespace System.Net.Melsec;
+
+public interface IChannel : IDisposable
 {
-    public interface IChannel : IDisposable
+    byte[] Execute(byte[] buffer);
+
+    int SendTimeout
     {
-        byte[] Execute(byte[] buffer);
+        get;
+        set;
+    }
 
-        int SendTimeout
-        {
-            get;
-            set;
-        }
-
-        int ReceiveTimeout
-        {
-            get;
-            set;
-        }
+    int ReceiveTimeout
+    {
+        get;
+        set;
     }
 }

@@ -1,8 +1,7 @@
 using System;
 
-namespace System.Net.Melsec
+namespace System.Net.Melsec;
+
+public abstract class MelsecComProtocol : MelsecProtocol
 {
-    public abstract class MelsecComProtocol : MelsecProtocol
-    {
-    }
 }
