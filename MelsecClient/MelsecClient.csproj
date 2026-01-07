@@ -1,75 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E363F5C8-A293-47F5-A835-DF877EDED234}</ProjectGuid>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Melsec</RootNamespace>
-    <AssemblyName>MelsecClient</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>MelsecClient library</AssemblyTitle>
+    <Description>Melsec communication protocol</Description>
+    <Company>A.Rudenko</Company>
+    <Product>MelsecClient</Product>
+    <Copyright>Copyright ©  2013</Copyright>
+    <AssemblyVersion>2.6.*</AssemblyVersion>
+    <NeutralLanguage>ru</NeutralLanguage>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <FileAlignment>4096</FileAlignment>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Enum\MelsecDeviceType.cs" />
-    <Compile Include="Enum\DestinationCpu.cs" />
-    <Compile Include="Enum\CpuStatus.cs" />
-    <Compile Include="Enum\SwitchStatus.cs" />
-    <Compile Include="Enum\StopPauseCause.cs" />
-    <Compile Include="Enum\ProtocolType.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Transport\Interface\IChannel.cs" />
-    <Compile Include="MelsecComClient.cs" />
-    <Compile Include="MelsecEthClient.cs" />
-    <Compile Include="Enum\ClearMode.cs" />
-    <Compile Include="Protocol\Melsec3EProtocol.cs" />
-    <Compile Include="Protocol\Melsec4EProtocol.cs" />
-    <Compile Include="MelsecClient.cs" />
-    <Compile Include="Protocol\MelsecComProtocol.cs" />
-    <Compile Include="Protocol\MelsecEthProtocol.cs" />
-    <Compile Include="Protocol\MelsecProtocol.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Transport\TcpChannel.cs" />
-    <Compile Include="Transport\UdpChannel.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MelsecClientDiagram.cd" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

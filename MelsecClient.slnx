@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MelsecClient/MelsecClient.csproj" />
+  <Project Path="TestClient/TestClient.csproj" />
+</Solution>
