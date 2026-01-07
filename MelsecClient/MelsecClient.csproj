@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Melsec</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -11,9 +11,11 @@
     <Copyright>Copyright ©  2013</Copyright>
     <AssemblyVersion>2.6.*</AssemblyVersion>
     <NeutralLanguage>ru</NeutralLanguage>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <FileAlignment>4096</FileAlignment>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 </Project>
