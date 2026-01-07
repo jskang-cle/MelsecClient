@@ -1,7 +1,6 @@
-using System;
 using System.Globalization;
 
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public abstract class MelsecClient
 {
@@ -9,15 +8,12 @@ public abstract class MelsecClient
 
     protected MelsecClient(ProtocolType protocoltype, string ip, ushort port, int receiveTimeout, int sendTimeout)
     {
-        switch (protocoltype)
+        melsecProtocol = protocoltype switch
         {
-            case ProtocolType.Melsec3EProtocol:
-                melsecProtocol = new Melsec3EProtocol(ip, port);
-                break;
-            case ProtocolType.Melsec4EProtocol:
-                melsecProtocol = new Melsec4EProtocol(ip, port);
-                break;
-        }
+            ProtocolType.Melsec3EProtocol => new Melsec3EProtocol(ip, port),
+            ProtocolType.Melsec4EProtocol => new Melsec4EProtocol(ip, port),
+            _ => throw new ArgumentOutOfRangeException(nameof(protocoltype), protocoltype, "Invalid protocol type")
+        };
         melsecProtocol.SendTimeout = sendTimeout;
         melsecProtocol.ReceiveTimeout = receiveTimeout;
     }
@@ -31,14 +27,12 @@ public abstract class MelsecClient
         string sd212 = datetime.ToString("mmss");
         ushort id212 = ushort.Parse(sd212, NumberStyles.HexNumber);
         string sd213 = datetime.ToString("yyyy");
-        sd213 = sd213.Substring(0, 2);
-        sd213 += "0";
-        sd213 += datetime.DayOfWeek.ToString("d");
+        sd213 = sd213[..2] + "0" + datetime.DayOfWeek.ToString("d");
         ushort id213 = ushort.Parse(sd213, NumberStyles.HexNumber);
         int d210 = (id211 << 16) | id210;
         int d212 = (id213 << 16) | id212;
-        melsecProtocol.WriteByte(new ushort[] { 213, 211 }, new bool[] { false, false }, MelsecDeviceType.SpecialRelay);
-        melsecProtocol.WriteDword(new ushort[] { 210, 212 }, new uint[] { (uint)d210, (uint)d212 }, MelsecDeviceType.SpecialRegister);
+        melsecProtocol.WriteByte([213, 211], [false, false], MelsecDeviceType.SpecialRelay);
+        melsecProtocol.WriteDword([210, 212], [(uint)d210, (uint)d212], MelsecDeviceType.SpecialRegister);
         melsecProtocol.WriteByte(210, false, MelsecDeviceType.SpecialRelay);
         melsecProtocol.WriteByte(210, true, MelsecDeviceType.SpecialRelay);
         melsecProtocol.WriteByte(210, false, MelsecDeviceType.SpecialRelay);
@@ -77,46 +71,42 @@ public abstract class MelsecClient
     public CpuStatus ReadCPUStatus()
     {
         ushort status = melsecProtocol.ReadWord(203, MelsecDeviceType.SpecialRegister);
-        int[] bStatus = new int[1];
-        bStatus[0] = status & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 15));
-        switch (bStatus[0])
+        int bStatus = status & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 15));
+        return bStatus switch
         {
-            case 0: return CpuStatus.RUN;
-            case 1: return CpuStatus.STEPRUN;
-            case 2: return CpuStatus.STOP;
-            case 3: return CpuStatus.PAUSE;
-            default: return CpuStatus.NONE;
-        }
+            0 => CpuStatus.RUN,
+            1 => CpuStatus.STEPRUN,
+            2 => CpuStatus.STOP,
+            3 => CpuStatus.PAUSE,
+            _ => CpuStatus.NONE
+        };
     }
-    
+
     public SwitchStatus ReadSwitchStatus()
     {
         ushort status = melsecProtocol.ReadWord(200, MelsecDeviceType.SpecialRegister);
-        int[] bStatus = new int[1];
-        bStatus[0] = status & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 15));
-        switch (bStatus[0])
+        int bStatus = status & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 15));
+        return bStatus switch
         {
-            case 0: return SwitchStatus.RUN;
-            case 1: return SwitchStatus.STOP;
-            case 2: return SwitchStatus.LCLR;
-            default: return SwitchStatus.NONE;
-        }
+            0 => SwitchStatus.RUN,
+            1 => SwitchStatus.STOP,
+            2 => SwitchStatus.LCLR,
+            _ => SwitchStatus.NONE
+        };
     }
-    
+
     public StopPauseCause ReadStopPauseCause()
     {
         ushort status = melsecProtocol.ReadWord(203, MelsecDeviceType.SpecialRegister);
-        int[] bStatus = new int[1];
-        bStatus[0] = status & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 15));
-        bStatus[0] >>= 4;
-        switch (bStatus[0])
+        int bStatus = (status & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 15))) >> 4;
+        return bStatus switch
         {
-            case 0: return StopPauseCause.BySwitch;
-            case 1: return StopPauseCause.RemoteRelay;
-            case 2: return StopPauseCause.RemoteDevice;
-            case 3: return StopPauseCause.ByProgram;
-            case 4: return StopPauseCause.ByError;
-            default: return StopPauseCause.None;
-        }
+            0 => StopPauseCause.BySwitch,
+            1 => StopPauseCause.RemoteRelay,
+            2 => StopPauseCause.RemoteDevice,
+            3 => StopPauseCause.ByProgram,
+            4 => StopPauseCause.ByError,
+            _ => StopPauseCause.None
+        };
     }
 }

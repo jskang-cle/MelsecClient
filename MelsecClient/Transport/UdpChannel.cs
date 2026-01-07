@@ -1,75 +1,40 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
-class UdpChannel : IChannel
+sealed class UdpChannel : IChannel
 {
-    private UdpClient Client;
-    private IPEndPoint EndPoint;
+    private readonly UdpClient _client;
+    private IPEndPoint _endPoint;
 
     public UdpChannel(IPEndPoint endpoint)
     {
-        EndPoint = endpoint;
-        Client = new UdpClient();
-        Client.Connect(endpoint);
+        _endPoint = endpoint;
+        _client = new UdpClient();
+        _client.Connect(endpoint);
     }
 
     public byte[] Execute(byte[] buffer)
     {
-        Client.Send(buffer, buffer.Length);
-        return Client.Receive(ref EndPoint);
+        _client.Send(buffer, buffer.Length);
+        return _client.Receive(ref _endPoint);
     }
 
     public int SendTimeout
     {
-        get
-        {
-            return Client.Client.SendTimeout;
-        }
-        set
-        {
-            Client.Client.SendTimeout = value;
-        }
+        get => _client.Client.SendTimeout;
+        set => _client.Client.SendTimeout = value;
     }
 
     public int ReceiveTimeout
     {
-        get
-        {
-            return Client.Client.ReceiveTimeout;
-        }
-        set
-        {
-            Client.Client.ReceiveTimeout = value;
-        }
+        get => _client.Client.ReceiveTimeout;
+        set => _client.Client.ReceiveTimeout = value;
     }
-
-    private bool disposed;
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this.disposed)
-        {
-            if (disposing)
-            {
-                if (Client != null)
-                {
-                    Client.Close();
-                    Client = null;
-                }
-            }
-            disposed = true;
-        }
-    }
-
-    ~UdpChannel()
-    {
-        Dispose(false);
+        _client?.Dispose();
     }
 }

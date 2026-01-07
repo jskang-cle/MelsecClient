@@ -1,4 +1,4 @@
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public sealed class MelsecEthClient : MelsecClient
 {
@@ -7,13 +7,7 @@ public sealed class MelsecEthClient : MelsecClient
     {
     }
 
-    public MelsecEthProtocol Protocol
-    {
-        get
-        {
-            return (MelsecEthProtocol)melsecProtocol;
-        }
-    }
+    public MelsecEthProtocol Protocol => (MelsecEthProtocol)melsecProtocol;
 
     public override string ToString()
     {

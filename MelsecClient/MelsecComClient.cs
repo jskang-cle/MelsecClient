@@ -1,4 +1,4 @@
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public sealed class MelsecComClient : MelsecClient
 {
@@ -7,11 +7,5 @@ public sealed class MelsecComClient : MelsecClient
     {
     }
 
-    public MelsecComProtocol Protocol
-    {
-        get
-        {
-            return (MelsecComProtocol)melsecProtocol;
-        }
-    }
+    public MelsecComProtocol Protocol => (MelsecComProtocol)melsecProtocol;
 }

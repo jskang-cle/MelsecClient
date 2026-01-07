@@ -1,10 +1,11 @@
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
 
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 {
-    private IPEndPoint EndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5000);
+    private IPEndPoint EndPoint = new(IPAddress.Parse("127.0.0.1"), 5000);
     private readonly int ErrorCodePosition;
     private readonly int MinResponseLength;
     protected readonly int ReturnValuePosition;
@@ -13,7 +14,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
     protected byte NetNo;
     protected byte PcNo = 0xFF;
     protected byte destinationCpu = (byte)DestinationCpu.LocalStation;
-    private IChannel Channel;
+    private IChannel? Channel;
     protected byte[] PacketHead;
 
     protected MelsecEthProtocol(
@@ -31,7 +32,11 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         ReturnValuePosition = returnValuePosition;
         ReturnPacketHeader = returnPacketHeader;
         DataLengthPosition = dataLengthPosition;
+
+        PacketHead = GetPacketHead();
     }
+
+    abstract protected byte[] GetPacketHead();
 
     public string Ip
     {
@@ -90,6 +95,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public bool KeepConnection { get; set; }
 
+    [MemberNotNull(nameof(Channel))]
     private void InitChannel()
     {
         if (Channel == null)
@@ -118,7 +124,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     protected override byte[] SendBuffer(byte[] buffer)
     {
-        byte[] outBuff = new byte[0];
+        byte[] outBuff = [];
         InitChannel();
         outBuff = Channel.Execute(buffer);
         if (!KeepConnection)
@@ -186,11 +192,11 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         packet.AddRange(PacketHead);
         byte[] addr = GetPointBytes(point);
         byte[] cnt = GetPointCount(count * typeSize / 2);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
             0x01,0x04,0x00,0x00,
             addr[0],addr[1],addr[2],
             (byte)DeviceType,
-            cnt[0],cnt[1]};
+            cnt[0],cnt[1]];
         packet.AddRange(buff1);
         byte[] recvbuffer = SendBuffer(packet.ToArray());
         int dataLen = recvbuffer.Length - ReturnValuePosition;
@@ -211,8 +217,8 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         ushort count = (ushort)(val.Length * typeSize / 2);
         byte[] cnt = GetPointCount(count);
         byte[] len = GetRequestDataLength(19 + PacketHead.Length + count * 2 - ErrorCodePosition);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x01,0x14,0x00,0x00,addr[0],addr[1],addr[2],(byte)DeviceType,cnt[0],cnt[1]};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x01,0x14,0x00,0x00,addr[0],addr[1],addr[2],(byte)DeviceType,cnt[0],cnt[1]];
         packet.AddRange(buff1);
         byte[] buff2 = new byte[count * 2];
         Buffer.BlockCopy(val, 0, buff2, 0, buff2.Length);
@@ -235,13 +241,13 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
             cnt[0] = 0;
             cnt[1] = (byte)count;
         }
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x03,0x04,0x00,0x00,cnt[0],cnt[1]};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x03,0x04,0x00,0x00,cnt[0],cnt[1]];
         packet.AddRange(buff1);
         for (int i = 0; i < count; ++i)
         {
             byte[] addr = GetPointBytes((ushort)(point[i]));
-            byte[] buff2 = { addr[0], addr[1], addr[2], (byte)DeviceType };
+            byte[] buff2 = [addr[0], addr[1], addr[2], (byte)DeviceType];
             packet.AddRange(buff2);
         }
         byte[] recvbuffer = SendBuffer(packet.ToArray());
@@ -269,15 +275,15 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
             cnt[0] = 0;
             cnt[1] = (byte)count;
         }
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x02,0x14,0x00,0x00,cnt[0],cnt[1]};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x02,0x14,0x00,0x00,cnt[0],cnt[1]];
         packet.AddRange(buff1);
         for (int i = 0; i < count; ++i)
         {
             byte[] addr = GetPointBytes(point[i]);
             byte[] rval = new byte[typeSize];
             Buffer.BlockCopy(val, i * typeSize, rval, 0, typeSize);
-            byte[] buff2 = { addr[0], addr[1], addr[2], (byte)DeviceType };
+            byte[] buff2 = [addr[0], addr[1], addr[2], (byte)DeviceType];
             packet.AddRange(buff2);
             packet.AddRange(rval);
         }
@@ -291,10 +297,10 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         packet.AddRange(PacketHead);
         byte[] addr = GetBytes(address, 4);
         byte[] cnt = GetPointCount(count * typeSize / 2);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
             0x13,0x06,0x00,0x00,
             addr[0],addr[1],addr[2],addr[3],
-            cnt[0],cnt[1]};
+            cnt[0],cnt[1]];
         packet.AddRange(buff1);
         byte[] recvbuffer = SendBuffer(packet.ToArray());
         int dataLen = recvbuffer.Length - ReturnValuePosition;
@@ -315,8 +321,8 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         ushort count = (ushort)(val.Length * typeSize / 2);
         byte[] cnt = GetPointCount(count);
         byte[] len = GetRequestDataLength(19 + PacketHead.Length + count * 2 - ErrorCodePosition);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x13,0x16,0x00,0x00,addr[0],addr[1],addr[2],addr[3],cnt[0],cnt[1]};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x13,0x16,0x00,0x00,addr[0],addr[1],addr[2],addr[3],cnt[0],cnt[1]];
         packet.AddRange(buff1);
         byte[] buff2 = new byte[count * 2];
         Buffer.BlockCopy(val, 0, buff2, 0, buff2.Length);
@@ -332,11 +338,11 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         byte[] mod = GetBytes(module, 2);
         byte[] addr = GetBytes(headAddress + address * 2, 4);
         byte[] cnt = GetPointCount(count * typeSize);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0E,0x00,0x10,0x00,
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0E,0x00,0x10,0x00,
             0x01,0x06,0x00,0x00,
             addr[0],addr[1],addr[2],addr[3],
             cnt[0],cnt[1],
-            mod[0],mod[1]};
+            mod[0],mod[1]];
         packet.AddRange(buff1);
         byte[] recvbuffer = SendBuffer(packet.ToArray());
         int dataLen = recvbuffer.Length - ReturnValuePosition;
@@ -358,8 +364,8 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         ushort count = (ushort)(val.Length * typeSize);
         byte[] cnt = GetPointCount(count);
         byte[] len = GetRequestDataLength(21 + PacketHead.Length + count - ErrorCodePosition);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x01,0x16,0x00,0x00,addr[0],addr[1],addr[2],addr[3],cnt[0],cnt[1],mod[0],mod[1]};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x01,0x16,0x00,0x00,addr[0],addr[1],addr[2],addr[3],cnt[0],cnt[1],mod[0],mod[1]];
         packet.AddRange(buff1);
         byte[] buff2 = new byte[count];
         Buffer.BlockCopy(val, 0, buff2, 0, buff2.Length);
@@ -369,9 +375,9 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public override string ReadCPUModelName()
     {
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x06,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x06,0x00,0x10,0x00,
             0x01,0x01,
-            0x00,0x00};
+            0x00,0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         byte[] recvbuffer = SendBuffer(sendbuffer);
         int dataLen = recvbuffer.Length - ReturnValuePosition;
@@ -398,7 +404,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public override void WriteReal(ushort point, float val, MelsecDeviceType DeviceType)
     {
-        WriteReal(point, new float[] { val }, DeviceType);
+        WriteReal(point, [val], DeviceType);
     }
 
     public override void WriteReal(ushort point, float[] val, MelsecDeviceType DeviceType)
@@ -428,7 +434,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public override void WriteDword(ushort point, uint val, MelsecDeviceType DeviceType)
     {
-        WriteDword(point, new uint[] { val }, DeviceType);
+        WriteDword(point, [val], DeviceType);
     }
 
     public override void WriteDword(ushort point, uint[] val, MelsecDeviceType DeviceType)
@@ -458,7 +464,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public override void WriteWord(ushort point, ushort val, MelsecDeviceType DeviceType)
     {
-        WriteWord(point, new ushort[] { val }, DeviceType);
+        WriteWord(point, [val], DeviceType);
     }
 
     public override void WriteWord(ushort point, ushort[] val, MelsecDeviceType DeviceType)
@@ -480,11 +486,11 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
     {
         byte[] addr = GetPointBytes(point);
         byte[] cnt = GetPointCount(count);
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0C,0x00,0x10,0x00,
             0x01,0x04,0x01,0x00,
             addr[0],addr[1],addr[2],
             (byte)DeviceType,
-            cnt[0],cnt[1]};
+            cnt[0],cnt[1]];
         sendbuffer = Concat(PacketHead, sendbuffer);
         byte[] recvbuffer = SendBuffer(sendbuffer);
         int dataLen = recvbuffer.Length - ReturnValuePosition;
@@ -493,8 +499,7 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         for (int i = 0, j = 0; i < dataLen; ++i, j += 2)
         {
             byte recvByte = recvbuffer[ReturnValuePosition + i];
-            byte[] retB = new byte[1];
-            retB[0] = (byte)(recvByte >> 4);
+            byte[] retB = [(byte)(recvByte >> 4)];
             ret[j] = BitConverter.ToBoolean(retB, 0);
             retB[0] = (byte)(recvByte & 1);
             ret[j + 1] = BitConverter.ToBoolean(retB, 0);
@@ -521,12 +526,12 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         byte On;
         if (state) On = 0x10;
         else On = 0x00;
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0D,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0D,0x00,0x10,0x00,
             0x01,0x14,0x01,0x00,
             addr[0],addr[1],addr[2],
             (byte)DeviceType,
             0x01,0x00,
-            On};
+            On];
         sendbuffer = Concat(PacketHead, sendbuffer);
         SendBuffer(sendbuffer);
     }
@@ -551,8 +556,8 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
             byte[] addr = GetPointBytes(point);
             byte[] cnt = GetPointCount(count);
             byte[] len = GetRequestDataLength(19 + PacketHead.Length + count / 2 - ErrorCodePosition);
-            byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-                                           0x01,0x14,0x01,0x00,addr[0],addr[1],addr[2],(byte)DeviceType, cnt[0],cnt[1]};
+            byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+                                           0x01,0x14,0x01,0x00,addr[0],addr[1],addr[2],(byte)DeviceType, cnt[0],cnt[1]];
             packet.AddRange(buff1);
             for (int i = 0, j = 0; i < count; i += 2, ++j)
             {
@@ -575,15 +580,15 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
         packet.AddRange(PacketHead);
         ushort count = (ushort)point.Length;
         byte[] len = GetRequestDataLength(14 + PacketHead.Length + count * 5 - ErrorCodePosition);
-        byte[] buff1 = {NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
-            0x02,0x14,0x01,0x00,(byte)count};
+        byte[] buff1 = [NetNo,PcNo,destinationCpu,0x03,0x00,len[0],len[1],0x10,0x00,
+            0x02,0x14,0x01,0x00,(byte)count];
         packet.AddRange(buff1);
         for (int i = 0; i < count; ++i)
         {
             byte[] addr = GetPointBytes(point[i]);
             byte[] bval = new byte[1];
             if (state[i]) bval[0] = 1;
-            byte[] buff2 = { addr[0], addr[1], addr[2], (byte)DeviceType, bval[0] };
+            byte[] buff2 = [addr[0], addr[1], addr[2], (byte)DeviceType, bval[0]];
             packet.AddRange(buff2);
         }
         SendBuffer(packet.ToArray());
@@ -591,9 +596,9 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
 
     public void ErrLedOff()
     {
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x06,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x06,0x00,0x10,0x00,
             0x17,0x16,
-            0x00,0x00};
+            0x00,0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         SendBuffer(sendbuffer);
     }
@@ -601,11 +606,11 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
     public override void Run(bool forced, ClearMode mode)
     {
         byte frcd = (forced) ? frcd = 0x03 : frcd = 0x01;
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x0A,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x0A,0x00,0x10,0x00,
             0x01,0x10,
             0x00,0x00,
             frcd,0x00,
-            (byte)mode, 0x00};
+            (byte)mode, 0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         SendBuffer(sendbuffer);
     }
@@ -613,30 +618,30 @@ public abstract class MelsecEthProtocol : MelsecProtocol, IDisposable
     public override void Pause(bool forced)
     {
         byte frcd = (forced) ? frcd = 0x03 : frcd = 0x01;
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
             0x03,0x10,
             0x00,0x00,
-            frcd,0x00};
+            frcd,0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         SendBuffer(sendbuffer);
     }
 
     public override void Stop()
     {
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
             0x02,0x10,
             0x00,0x00,
-            0x01,0x00};
+            0x01,0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         SendBuffer(sendbuffer);
     }
 
     public override void Reset()
     {
-        byte[] sendbuffer = {NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
+        byte[] sendbuffer = [NetNo,PcNo,destinationCpu,0x03,0x00,0x08,0x00,0x10,0x00,
             0x06,0x10,
             0x00,0x00,
-            0x01,0x00};
+            0x01,0x00];
         sendbuffer = Concat(PacketHead, sendbuffer);
         try
         {

@@ -1,6 +1,4 @@
-using System;
-
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public abstract class MelsecComProtocol : MelsecProtocol
 {

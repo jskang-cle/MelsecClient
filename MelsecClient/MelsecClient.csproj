@@ -2,20 +2,35 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <RootNamespace>Melsec</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AssemblyTitle>MelsecClient library</AssemblyTitle>
-    <Description>Melsec communication protocol</Description>
-    <Company>A.Rudenko</Company>
-    <Product>MelsecClient</Product>
-    <Copyright>Copyright ©  2013</Copyright>
-    <AssemblyVersion>2.6.*</AssemblyVersion>
-    <NeutralLanguage>ru</NeutralLanguage>
+    <RootNamespace>MelsecClient</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    
+    <!-- Package Metadata -->
+    <Title>MelsecClient library</Title>
+    <Description>Melsec communication protocol implementation for Mitsubishi Melsec Q controllers</Description>
+    <Authors>A.Rudenko</Authors>
+    <Company>A.Rudenko</Company>
+    <Product>MelsecClient</Product>
+    <Copyright>Copyright © A.Rudenko 2013-2018</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>en</NeutralLanguage>
+    
+    <!-- Version Information -->
+    <Version>2.7.0</Version>
+    <AssemblyVersion>2.7.0</AssemblyVersion>
+    <FileVersion>2.7.0</FileVersion>
+    
+    <!-- Build Settings -->
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\Readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
 </Project>

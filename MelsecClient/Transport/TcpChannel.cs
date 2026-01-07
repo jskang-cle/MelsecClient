@@ -1,94 +1,56 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
-class TcpChannel : IChannel
+sealed class TcpChannel : IChannel
 {
-    private TcpClient Client;
-    private NetworkStream stream;
+    private readonly TcpClient _client;
+    private readonly NetworkStream _stream;
 
     public TcpChannel(IPEndPoint endpoint)
     {
-        Client = new TcpClient();
-        Client.Connect(endpoint);
-        stream = Client.GetStream();
-        if (!stream.CanWrite) throw new Exception("Stream don't ready to write");
+        _client = new TcpClient();
+        _client.Connect(endpoint);
+        _stream = _client.GetStream();
+        if (!_stream.CanWrite) 
+            throw new InvalidOperationException("Stream is not ready for writing");
     }
 
     public byte[] Execute(byte[] buffer)
     {
-        stream.Write(buffer, 0, buffer.Length);
-        System.Collections.Generic.List<byte> lst = new Collections.Generic.List<byte>();
-        if (stream.CanRead)
+        _stream.Write(buffer, 0, buffer.Length);
+        List<byte> lst = [];
+        if (_stream.CanRead)
         {
             byte[] buff = new byte[1024];
-            int n = 0;
+            int n;
             do
             {
-                n = stream.Read(buff, 0, buff.Length);
+                n = _stream.Read(buff, 0, buff.Length);
                 for (int i = 0; i < n; ++i)
                     lst.Add(buff[i]);
             }
-            while (stream.DataAvailable);
+            while (_stream.DataAvailable);
         }
-        return lst.ToArray();
+        return [.. lst];
     }
 
     public int SendTimeout
     {
-        get
-        {
-            return Client.Client.SendTimeout;
-        }
-        set
-        {
-            Client.Client.SendTimeout = value;
-        }
+        get => _client.Client.SendTimeout;
+        set => _client.Client.SendTimeout = value;
     }
 
     public int ReceiveTimeout
     {
-        get
-        {
-            return Client.Client.ReceiveTimeout;
-        }
-        set
-        {
-            Client.Client.ReceiveTimeout = value;
-        }
+        get => _client.Client.ReceiveTimeout;
+        set => _client.Client.ReceiveTimeout = value;
     }
-
-    private bool disposed;
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this.disposed)
-        {
-            if (disposing)
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                    stream = null;
-                }
-                if (Client != null)
-                {
-                    Client.Close();
-                    Client = null;
-                }
-            }
-            disposed = true;
-        }
-    }
-
-    ~TcpChannel()
-    {
-        Dispose(false);
+        _stream?.Dispose();
+        _client?.Dispose();
     }
 }

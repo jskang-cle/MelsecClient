@@ -1,6 +1,4 @@
-using System;
-
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public sealed class Melsec4EProtocol : MelsecEthProtocol
 {
@@ -14,18 +12,16 @@ public sealed class Melsec4EProtocol : MelsecEthProtocol
     {
         Random rnd = new Random();
         serialNo = (ushort)rnd.Next(ushort.MinValue, ushort.MaxValue);
-        base.PacketHead = new byte[] { 0x54, 0x00, SerialNo[0], SerialNo[1], 0x00, 0x00 };
+    }
+
+    protected override byte[] GetPacketHead()
+    {
+        return [0x54, 0x00, SerialNo[0], SerialNo[1], 0x00, 0x00];
     }
 
     private readonly ushort serialNo;
 
-    private byte[] SerialNo
-    {
-        get
-        {
-            return BitConverter.GetBytes(serialNo);
-        }
-    }
+    private byte[] SerialNo => BitConverter.GetBytes(serialNo);
 
     protected override byte[] SendBuffer(byte[] buffer)
     {

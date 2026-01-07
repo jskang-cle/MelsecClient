@@ -1,4 +1,4 @@
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public enum MelsecDeviceType : byte
 {

@@ -1,6 +1,4 @@
-using System;
-
-namespace System.Net.Melsec;
+namespace MelsecClient;
 
 public sealed class Melsec3EProtocol : MelsecEthProtocol
 {
@@ -12,6 +10,10 @@ public sealed class Melsec3EProtocol : MelsecEthProtocol
               returnPacketHeader: 0xD0,
               dataLengthPosition: 7)
     {
-        base.PacketHead = new byte[] { 0x50, 0x00 };
+    }
+    
+    protected override byte[] GetPacketHead()
+    {
+        return [0x50, 0x00];
     }
 }
